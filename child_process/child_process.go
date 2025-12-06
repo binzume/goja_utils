@@ -1,10 +1,11 @@
-package goja_utils
+package child_process
 
 import (
 	"bytes"
 	"os/exec"
 	"runtime"
 
+	"github.com/binzume/goja_utils"
 	"github.com/dop251/goja"
 	"github.com/dop251/goja_nodejs/require"
 )
@@ -38,7 +39,7 @@ func makeExec(vm *goja.Runtime) any {
 }
 
 func makeExecFile(vm *goja.Runtime) func(cmd string, args []string, callback func(error, any, any), options map[string]any) any {
-	r := GetTaskQueue(vm)
+	r := goja_utils.GetTaskQueue(vm)
 	return func(cmd string, args []string, callback func(error, any, any), options map[string]any) any {
 		c := exec.Command(cmd, args...)
 		var stdout bytes.Buffer
@@ -47,7 +48,7 @@ func makeExecFile(vm *goja.Runtime) func(cmd string, args []string, callback fun
 		c.Stderr = &stderr
 		err := c.Start()
 		if err != nil {
-			return err
+			return vm.NewGoError(err)
 		}
 		p := r.StartGoroutineTask(func() (any, error) {
 			c.Wait()
@@ -68,19 +69,19 @@ func makeExecFile(vm *goja.Runtime) func(cmd string, args []string, callback fun
 }
 
 func makeExecSync(vm *goja.Runtime) any {
-	return func(cmd string, options map[string]any) any {
+	return func(cmd string, options map[string]any) (any, error) {
 		cmd, args := runInSell(cmd)
 		return makeExecFileSync(vm)(cmd, args, options)
 	}
 }
 
-func makeExecFileSync(vm *goja.Runtime) func(cmd string, args []string, options map[string]any) any {
-	return func(cmd string, args []string, options map[string]any) any {
-		c, err := exec.Command(cmd, args...).Output()
+func makeExecFileSync(vm *goja.Runtime) func(cmd string, args []string, options map[string]any) (any, error) {
+	return func(cmd string, args []string, options map[string]any) (any, error) {
+		out, err := exec.Command(cmd, args...).Output()
 		if err != nil {
-			return nil
+			return nil, err
 		}
-		return convOutput(c, vm, options)
+		return convOutput(out, vm, options), nil
 	}
 
 }
@@ -107,7 +108,7 @@ func RequireChildProcess(runtime *goja.Runtime, module *goja.Object) {
 	o.Set("spawnSync", spawnSync)
 }
 
-func EnablChildProcess(runtime *goja.Runtime) {
+func Enable(runtime *goja.Runtime) {
 	runtime.Set("child_process", require.Require(runtime, "child_process"))
 }
 

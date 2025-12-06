@@ -38,7 +38,11 @@ type JsRunner struct {
 }
 
 func NewJsRunnner() *JsRunner {
-	r := &JsRunner{EventLoop: eventloop.NewEventLoop()}
+	return NewJsRunnnerFromLoop(eventloop.NewEventLoop())
+}
+
+func NewJsRunnnerFromLoop(loop *eventloop.EventLoop) *JsRunner {
+	r := &JsRunner{EventLoop: loop}
 	r.Run(func(vm *goja.Runtime) {
 		vm.Set(taskQueueName, r)
 		r.vmUnsafe = vm

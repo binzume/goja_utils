@@ -1,4 +1,4 @@
-package goja_utils
+package fetch
 
 import (
 	"encoding/json"
@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/binzume/goja_utils"
 	"github.com/dop251/goja"
 )
 
@@ -23,7 +24,7 @@ func (o JsMap) GetString(name, def string) string {
 }
 
 func makeFetch(vm *goja.Runtime) any {
-	r := GetTaskQueue(vm)
+	r := goja_utils.GetTaskQueue(vm)
 	return func(url string, options JsMap) any {
 		method := options.GetString("method", "GET")
 		var body io.Reader
@@ -75,6 +76,6 @@ func makeFetch(vm *goja.Runtime) any {
 	}
 }
 
-func EnableFetch(vm *goja.Runtime) {
+func Enable(vm *goja.Runtime) {
 	vm.Set("fetch", makeFetch(vm))
 }

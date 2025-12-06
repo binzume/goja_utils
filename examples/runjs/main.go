@@ -5,6 +5,9 @@ import (
 	"os"
 
 	"github.com/binzume/goja_utils"
+	_ "github.com/binzume/goja_utils/child_process"
+	"github.com/binzume/goja_utils/fetch"
+	_ "github.com/binzume/goja_utils/fs"
 	"github.com/dop251/goja"
 )
 
@@ -18,7 +21,7 @@ func main() {
 
 	// Enables Fetch API
 	r.Run(func(vm *goja.Runtime) {
-		goja_utils.EnableFetch(vm)
+		fetch.Enable(vm)
 	})
 
 	r.Start()
