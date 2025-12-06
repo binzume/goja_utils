@@ -145,7 +145,7 @@ func RequireFs(runtime *goja.Runtime, module *goja.Object) {
 	o.Set("unlinkSync", rmSync)
 	o.Set("renameSync", renameSync)
 	po := runtime.NewObject()
-	SetupFsPromises(runtime, o)
+	SetupFsPromises(runtime, po)
 	o.Set("promises", po)
 }
 

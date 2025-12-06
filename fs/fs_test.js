@@ -1,5 +1,6 @@
 
 const fs = require("fs");
+const fspromises = fs.promises;
 const testdataDir = '../testdata/';
 
 async function test_readFileSync() {
@@ -75,12 +76,20 @@ async function test_writeTest() {
     }
 }
 
+async function test_promises() {
+    let content = await fspromises.readFile(testdataDir + "test.txt", { encoding: 'utf8' });
+    if (content.trim() != "Hello") {
+        throw `${content} != Hello`
+    }
+}
+
 async function test() {
     await test_readFileSync();
     await test_statSync();
     await test_writeTest();
+    await test_promises();
 
-    return "pass"
+    return "pass";
 }
 
 test();
