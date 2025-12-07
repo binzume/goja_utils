@@ -1,7 +1,7 @@
 const baseUrl = globalThis.testServerUrl || "http://binzume.net";
 console.log("Test url:", baseUrl);
 
-async function test_get() {
+async function test_get_text() {
     let res = await fetch(baseUrl);
     if (res.status != 200) {
         throw "res.status != 200";
@@ -12,7 +12,18 @@ async function test_get() {
     }
 }
 
-async function test_json() {
+async function test_get_bytes() {
+    let res = await fetch(baseUrl);
+    if (res.status != 200) {
+        throw "res.status != 200";
+    }
+    let data = await res.bytes();
+    if (!data instanceof Uint8Array) {
+        throw `!data instanceof Uint8Array`;
+    }
+}
+
+async function test_get_json() {
     let res = await fetch(baseUrl);
     if (res.status != 200) {
         throw "res.status != 200";
@@ -35,8 +46,9 @@ async function test_404() {
 }
 
 async function test() {
-    await test_get();
-    await test_json();
+    await test_get_text();
+    await test_get_bytes();
+    await test_get_json();
     await test_404();
 
     return "pass"

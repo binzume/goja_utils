@@ -47,7 +47,6 @@ func makeFetch(vm *goja.Runtime) any {
 				return nil, err
 			}
 
-			fmt.Println("fetch start")
 			body, err := io.ReadAll(resp.Body)
 			if err != nil {
 				return nil, err
@@ -57,21 +56,23 @@ func makeFetch(vm *goja.Runtime) any {
 				resHeaders[k] = v
 			}
 			resp.Location()
-			fmt.Println("fetch ok")
 			return map[string]any{
-				"ok":    resp.StatusCode >= 200 && resp.StatusCode < 300,
-				"text":  func() string { return string(body) },
-				"bytes": func() any { return body },
-				"json": func() any {
-					data := map[string]any{}
-					_ = json.Unmarshal(body, &data)
-					return data
+				"ok":         resp.StatusCode >= 200 && resp.StatusCode < 300,
+				"status":     resp.StatusCode,
+				"statusText": resp.Status,
+				"url":        resp.Request.URL.String(),
+				"headers":    resHeaders,
+				"text":       func() string { return string(body) },
+				"json": func() (any, error) {
+					var data any
+					err := json.Unmarshal(body, &data)
+					return data, err
 				},
 				"arrayBuffer": func() any { return vm.NewArrayBuffer(body) },
-				"status":      resp.StatusCode,
-				"statusText":  resp.Status,
-				"url":         resp.Request.URL.String(),
-				"headers":     resHeaders}, nil
+				"bytes": func() (any, error) {
+					return vm.New(vm.Get("Uint8Array"), vm.ToValue(vm.NewArrayBuffer(body)))
+				},
+			}, nil
 		})
 	}
 }
