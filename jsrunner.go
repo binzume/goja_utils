@@ -7,6 +7,7 @@ import (
 
 	"github.com/dop251/goja"
 	"github.com/dop251/goja_nodejs/eventloop"
+	"github.com/dop251/goja_nodejs/require"
 )
 
 const taskQueueName = "$_task_queue"
@@ -35,10 +36,15 @@ type JsRunner struct {
 	wg       sync.WaitGroup
 	vmUnsafe *goja.Runtime // do not use while running
 	running  bool
+	registry *require.Registry
 }
 
 func NewJsRunnner() *JsRunner {
-	return NewJsRunnnerFromLoop(eventloop.NewEventLoop())
+	registry := new(require.Registry)
+
+	r := NewJsRunnnerFromLoop(eventloop.NewEventLoop(eventloop.WithRegistry(registry)))
+	r.registry = registry
+	return r
 }
 
 func NewJsRunnnerFromLoop(loop *eventloop.EventLoop) *JsRunner {
@@ -72,6 +78,10 @@ func (r *JsRunner) IsRunning() bool {
 
 func (r *JsRunner) QueueMicrotask(f func(vm *goja.Runtime)) bool {
 	return r.RunOnLoop(f)
+}
+
+func (r *JsRunner) Registry() *require.Registry {
+	return r.registry
 }
 
 func (r *JsRunner) Wait() {
