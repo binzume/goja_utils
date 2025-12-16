@@ -11,6 +11,12 @@ import (
 	"github.com/dop251/goja"
 )
 
+type Client interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
+var HttpClient Client = http.DefaultClient
+
 type JsMap map[string]any
 
 func (o JsMap) GetString(name, def string) string {
@@ -42,7 +48,7 @@ func makeFetch(vm *goja.Runtime) any {
 				return nil, err
 			}
 
-			resp, err := http.DefaultClient.Do(req)
+			resp, err := HttpClient.Do(req)
 			if err != nil {
 				return nil, err
 			}
